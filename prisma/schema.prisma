@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Author {
+  id         String  @id @default(uuid())
+  username   String  @unique
+  email      String  @unique
+  password   String
+  profilePic String[]
+  bio        String?
+
+  videos       Video[]
+  comments     Comment[]
+  replies      Reply[]
+  videoLikes   VideoLike[]
+  commentLikes CommentLike[]
+  followers    Follow[]      @relation("Following")
+  followings   Follow[]      @relation("Follower")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  role String @default("user")
+}
+
+model Video {
+  id       String @id @default(uuid())
+  author   Author @relation(fields: [authorId], references: [id])
+  authorId String
+
+  title        String
+  description  String?
+  videoUrl     String[]
+  thumbnailUrl String?
+  duration     Int
+
+  music   Music?  @relation(fields: [musicId], references: [id])
+  musicId String?
+
+  viewCount    Int @default(0)
+  likeCount    Int @default(0)
+  commentCount Int @default(0)
+  shareCount   Int @default(0)
+
+  comments Comment[]
+  likes    VideoLike[]
+  hashtags VideoHashtag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Music {
+  id        String  @id @default(uuid())
+  title     String
+  artist    String?
+  url       String
+  duration  Int
+  thumbnail String?
+  videos    Video[]
+
+  createdAt DateTime @default(now())
+}
+
+model Comment {
+  id       String @id @default(uuid())
+  video    Video  @relation(fields: [videoId], references: [id])
+  videoId  String
+  author   Author @relation(fields: [authorId], references: [id])
+  authorId String
+
+  content String
+  replies Reply[]
+  likes   CommentLike[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Reply {
+  id        String  @id @default(uuid())
+  comment   Comment @relation(fields: [commentId], references: [id])
+  commentId String
+  author    Author  @relation(fields: [authorId], references: [id])
+  authorId  String
+
+  content String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VideoLike {
+  id        String   @id @default(uuid())
+  user      Author   @relation(fields: [userId], references: [id])
+  userId    String
+  video     Video    @relation(fields: [videoId], references: [id])
+  videoId   String
+  createdAt DateTime @default(now())
+}
+
+model CommentLike {
+  id        String   @id @default(uuid())
+  user      Author   @relation(fields: [userId], references: [id])
+  userId    String
+  comment   Comment  @relation(fields: [commentId], references: [id])
+  commentId String
+  createdAt DateTime @default(now())
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  follower    Author   @relation("Follower", fields: [followerId], references: [id])
+  followerId  String
+  following   Author   @relation("Following", fields: [followingId], references: [id])
+  followingId String
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}
+
+model Hashtag {
+  id     String         @id @default(uuid())
+  name   String         @unique
+  videos VideoHashtag[]
+}
+
+model VideoHashtag {
+  id        String  @id @default(uuid())
+  video     Video   @relation(fields: [videoId], references: [id])
+  videoId   String
+  hashtag   Hashtag @relation(fields: [hashtagId], references: [id])
+  hashtagId String
+}
