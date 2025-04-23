@@ -17,8 +17,8 @@ export class CreateAuthorDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsString()
-  profilePic?: string;
+  @IsString({ each: true })
+  profilePic?: string[];
 
   @ApiProperty({ required: false })
   @IsOptional()

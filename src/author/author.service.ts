@@ -1,3 +1,4 @@
+import * as bcrypt from 'bcrypt';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Author, Prisma } from '@prisma/client';
@@ -26,8 +27,20 @@ export class AuthorService {
     return author;
   }
 
-  async create(data: Prisma.AuthorCreateInput): Promise<Author> {
-    return this.prisma.author.create({ data });
+  async create(
+    data: Prisma.AuthorCreateInput,
+  ): Promise<Omit<Author, 'password'>> {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    const author = await this.prisma.author.create({
+      data: {
+        ...data,
+        password: hashedPassword,
+      },
+    });
+
+    const { password, ...authorWithoutPassword } = author;
+    return authorWithoutPassword;
   }
 
   async update(id: string, data: Prisma.AuthorUpdateInput): Promise<Author> {

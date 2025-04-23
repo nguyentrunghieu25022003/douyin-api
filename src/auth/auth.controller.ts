@@ -31,12 +31,14 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const token = this.authService.login(req.user as JwtPayload);
+
     res.cookie('access_token', token.access_token, {
       httpOnly: COOKIE.HTTP_ONLY,
       secure: COOKIE.SECURE,
       sameSite: COOKIE.SAME_SITE,
       maxAge: COOKIE.MAX_AGE,
     });
+
     return {
       access_token: token.access_token,
       refresh_token: token.refresh_token,
