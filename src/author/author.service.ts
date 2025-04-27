@@ -16,11 +16,35 @@ export class AuthorService {
       orderBy: {
         createdAt: 'desc',
       },
+      include: {
+        videos: {
+          include: {
+            hashtags: {
+              include: {
+                hashtag: true,
+              },
+            },
+          },
+        },
+      },
     });
   }
 
   async findOne(id: string): Promise<Author> {
-    const author = await this.prisma.author.findUnique({ where: { id } });
+    const author = await this.prisma.author.findUnique({
+      where: { id },
+      include: {
+        videos: {
+          include: {
+            hashtags: {
+              include: {
+                hashtag: true,
+              },
+            },
+          },
+        },
+      },
+    });
     if (!author) {
       throw ErrorMessages.NOT_FOUND;
     }

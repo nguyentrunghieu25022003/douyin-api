@@ -19,13 +19,13 @@ import {
 export class AuthorController {
   constructor(private readonly authorService: AuthorService) {}
 
-  @Get('/all')
+  @Get('')
   findAll(@Query() query: PaginationDto) {
     const { page, limit } = query;
     return this.authorService.findAll(page, limit);
   }
 
-  @Get(':id')
+  @Get('/detail/:id')
   findOne(@Param('id') id: string) {
     return this.authorService.findOne(id);
   }

@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Req,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -38,7 +39,8 @@ export class UploadController {
       },
     },
   })
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
-    return this.uploadService.handleFile(file);
+  uploadFile(@UploadedFile() file: Express.Multer.File, @Req() req) {
+    const userEmail = req.user.email as string;
+    return this.uploadService.handleFile(file, userEmail);
   }
 }

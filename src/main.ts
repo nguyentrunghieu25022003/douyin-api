@@ -24,8 +24,8 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('TikTok Clone API')
-    .setDescription('API for a TikTok Clone built with NestJS and Prisma')
+    .setTitle('Douyin API')
+    .setDescription('API for a Douyin built with NestJS and Prisma')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

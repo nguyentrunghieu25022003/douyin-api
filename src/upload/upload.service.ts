@@ -1,13 +1,23 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UploadService {
-  handleFile(file: Express.Multer.File) {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async handleFile(file: Express.Multer.File, userEmail: string) {
+    const fileUrl = `${process.env.PATH}/uploads/${file.filename}`;
+
+    await this.prisma.author.update({
+      where: { email: userEmail },
+      data: {
+        profilePic: [fileUrl],
+      },
+    });
+
     return {
-      message: 'File uploaded',
-      filename: file.filename,
-      mimetype: file.mimetype,
-      size: file.size,
+      message: 'File uploaded and user updated',
+      fileUrl,
     };
   }
 }

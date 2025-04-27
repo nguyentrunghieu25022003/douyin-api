@@ -22,6 +22,7 @@ model Author {
   commentLikes CommentLike[]
   followers    Follow[]      @relation("Following")
   followings   Follow[]      @relation("Follower")
+  favoriteVideos FavoriteVideo[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -36,7 +37,7 @@ model Video {
 
   title        String
   description  String?
-  videoUrl     String[]
+  videoUrl     String
   thumbnailUrl String?
   duration     Int
 
@@ -51,6 +52,8 @@ model Video {
   comments Comment[]
   likes    VideoLike[]
   hashtags VideoHashtag[]
+  favoritedBy FavoriteVideo[]
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -137,4 +140,15 @@ model VideoHashtag {
   videoId   String
   hashtag   Hashtag @relation(fields: [hashtagId], references: [id])
   hashtagId String
+}
+
+model FavoriteVideo {
+  id        String   @id @default(uuid())
+  user      Author   @relation(fields: [userId], references: [id])
+  userId    String
+  video     Video    @relation(fields: [videoId], references: [id])
+  videoId   String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, videoId])
 }
