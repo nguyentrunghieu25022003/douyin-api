@@ -23,6 +23,11 @@ export class VideoService {
           },
         },
         music: true,
+        author: {
+          select: {
+            username: true,
+          },
+        },
       },
     });
   }
