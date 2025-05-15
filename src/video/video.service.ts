@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Video, Hashtag } from '@prisma/client';
+import { Video } from '@prisma/client';
 import { ErrorMessages } from '../common/errors/error-message';
 
 @Injectable()
@@ -26,6 +26,7 @@ export class VideoService {
         author: {
           select: {
             username: true,
+            profilePic: true,
           },
         },
       },

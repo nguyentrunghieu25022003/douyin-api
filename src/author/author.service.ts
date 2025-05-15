@@ -30,7 +30,7 @@ export class AuthorService {
     });
   }
 
-  async findOne(id: string): Promise<Author> {
+  async findOne(id: string) {
     const author = await this.prisma.author.findUnique({
       where: { id },
       include: {
@@ -48,7 +48,23 @@ export class AuthorService {
     if (!author) {
       throw ErrorMessages.NOT_FOUND;
     }
-    return author;
+    const followersCount = await this.prisma.follow.count({
+      where: {
+        followingId: id,
+      },
+    });
+
+    const followingsCount = await this.prisma.follow.count({
+      where: {
+        followerId: id,
+      },
+    });
+
+    return {
+      ...author,
+      followersCount,
+      followingsCount,
+    };
   }
 
   async create(
