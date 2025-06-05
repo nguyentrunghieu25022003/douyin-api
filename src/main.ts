@@ -1,4 +1,5 @@
 import * as cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
@@ -7,10 +8,18 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.use(
+    rateLimit({
+      windowMs: 10 * 60 * 1000,
+      max: 100,
+      message: 'Too many requests, please try again later.',
+    }),
+  );
+
   app.use(cookieParser());
 
   app.enableCors({
-    origin: ['http://localhost:5173'],
+    origin: ['http://localhost:5173', 'https://tik-clone.netlify.app'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

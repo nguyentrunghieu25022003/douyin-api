@@ -4,11 +4,16 @@ export const JWT = {
   EXPIRES_IN: '1h',
 };
 
-export const COOKIE = {
-  MAX_AGE: 1000 * 60 * 60,
+export const COOKIE: {
+  MAX_AGE: number;
+  HTTP_ONLY: boolean;
+  SECURE: boolean;
+  SAME_SITE: 'lax' | 'strict' | 'none';
+} = {
+  MAX_AGE: 1000 * 60 * 5,
   HTTP_ONLY: true,
   SECURE: process.env.NODE_ENV === 'production',
-  SAME_SITE: 'lax' as const,
+  SAME_SITE: 'none',
 };
 
 export const ROLES = {

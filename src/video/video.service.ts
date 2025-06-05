@@ -58,4 +58,51 @@ export class VideoService {
     }
     return this.prisma.video.delete({ where: { id } });
   }
+
+  async like(
+    userId: string,
+    videoId: string,
+  ): Promise<{ liked: boolean; count: number }> {
+    const author = await this.prisma.author.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!author) {
+      throw ErrorMessages.NOT_FOUND;
+    }
+
+    const video = await this.findOne(videoId);
+    if (!video) {
+      throw ErrorMessages.NOT_FOUND;
+    }
+
+    const existing = await this.prisma.videoLike.findUnique({
+      where: {
+        userId_videoId: { userId, videoId },
+      },
+    });
+
+    if (existing) {
+      await this.prisma.videoLike.delete({
+        where: { userId_videoId: { userId, videoId } },
+      });
+    } else {
+      await this.prisma.videoLike.create({
+        data: {
+          userId,
+          videoId,
+        },
+      });
+    }
+
+    const count = await this.prisma.videoLike.count({
+      where: { videoId },
+    });
+
+    return {
+      liked: !existing,
+      count,
+    };
+  }
 }

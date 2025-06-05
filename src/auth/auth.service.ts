@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { ErrorMessages } from '../common/errors/error-message';
 import { Author } from '@prisma/client';
+import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -25,9 +26,48 @@ export class AuthService {
     return null;
   }
 
-  login(user: JwtPayload) {
-    const payload = { email: user.email, sub: user.sub, role: user.role };
+  async register(registerDto: RegisterDto): Promise<any> {
+    const { username, email, password } = registerDto;
+
+    const existing = await this.prisma.author.findFirst({
+      where: {
+        OR: [{ email }, { username }],
+      },
+    });
+
+    if (existing) {
+      throw ErrorMessages.BAD_REQUEST;
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await this.prisma.author.create({
+      data: {
+        username,
+        email,
+        password: hashedPassword,
+      },
+    });
+
     return {
+      message: 'Register successful',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
+    };
+  }
+
+  login(user: JwtPayload) {
+    const payload = { email: user.email, sub: user.id, role: user.role };
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
       access_token: this.jwtService.sign(payload, { expiresIn: '15m' }),
       refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
     };
@@ -37,10 +77,10 @@ export class AuthService {
     try {
       const payload = this.jwtService.verify<JwtPayload>(refreshToken);
       const newAccessToken = this.jwtService.sign(
-        { email: payload.email, sub: payload.sub, role: payload.role },
+        { email: payload.email, sub: payload.id, role: payload.role },
         { expiresIn: '15m' },
       );
-      return { accessToken: newAccessToken };
+      return { access_token: newAccessToken };
     } catch {
       throw ErrorMessages.INVALID_TOKEN;
     }

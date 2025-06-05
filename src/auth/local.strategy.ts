@@ -16,10 +16,10 @@ export class LocalStrategy extends PassportStrategy(LocalStrategyBase) {
     if (!user) {
       throw ErrorMessages.UNAUTHORIZED;
     }
-    const { _id } = user as unknown as { _id: string };
+    const { id } = user as unknown as { id: string };
     return {
       email: user.email,
-      sub: _id,
+      id: id,
       role: user.role as 'admin' | 'user',
     };
   }

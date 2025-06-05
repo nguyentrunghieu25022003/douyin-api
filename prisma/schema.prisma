@@ -8,124 +8,111 @@ datasource db {
 }
 
 model Author {
-  id         String  @id @default(uuid())
-  username   String  @unique
-  email      String  @unique
-  password   String
-  profilePic String[]
-  bio        String?
-
-  videos       Video[]
-  comments     Comment[]
-  replies      Reply[]
-  videoLikes   VideoLike[]
-  commentLikes CommentLike[]
-  followers    Follow[]      @relation("Following")
-  followings   Follow[]      @relation("Follower")
+  id             String          @id @default(uuid())
+  username       String          @unique
+  email          String          @unique
+  password       String
+  bio            String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  role           String          @default("user")
+  profilePic     String[]
+  comments       Comment[]
+  commentLikes   CommentLike[]
   favoriteVideos FavoriteVideo[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  role String @default("user")
+  followings     Follow[]        @relation("Follower")
+  followers      Follow[]        @relation("Following")
+  replies        Reply[]
+  videos         Video[]
+  videoLikes     VideoLike[]
 }
 
 model Video {
-  id       String @id @default(uuid())
-  author   Author @relation(fields: [authorId], references: [id])
-  authorId String
-
+  id           String          @id @default(uuid())
+  authorId     String
   title        String
   description  String?
-  videoUrl     String
   thumbnailUrl String?
   duration     Int
-
-  music   Music?  @relation(fields: [musicId], references: [id])
-  musicId String?
-
-  viewCount    Int @default(0)
-  likeCount    Int @default(0)
-  commentCount Int @default(0)
-  shareCount   Int @default(0)
-
-  comments Comment[]
-  likes    VideoLike[]
-  hashtags VideoHashtag[]
-  favoritedBy FavoriteVideo[]
-
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  viewCount    Int             @default(0)
+  likeCount    Int             @default(0)
+  commentCount Int             @default(0)
+  shareCount   Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  musicId      String?
+  videoUrl     String?
+  comments     Comment[]
+  favoritedBy  FavoriteVideo[]
+  author       Author          @relation(fields: [authorId], references: [id])
+  music        Music?          @relation(fields: [musicId], references: [id])
+  hashtags     VideoHashtag[]
+  likes        VideoLike[]
 }
 
 model Music {
-  id        String  @id @default(uuid())
+  id        String   @id @default(uuid())
   title     String
   artist    String?
   url       String
   duration  Int
   thumbnail String?
-  videos    Video[]
-
   createdAt DateTime @default(now())
+  videos    Video[]
 }
 
 model Comment {
-  id       String @id @default(uuid())
-  video    Video  @relation(fields: [videoId], references: [id])
-  videoId  String
-  author   Author @relation(fields: [authorId], references: [id])
-  authorId String
-
-  content String
-  replies Reply[]
-  likes   CommentLike[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String        @id @default(uuid())
+  videoId   String
+  authorId  String
+  content   String
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  author    Author        @relation(fields: [authorId], references: [id])
+  video     Video         @relation(fields: [videoId], references: [id])
+  likes     CommentLike[]
+  replies   Reply[]
 }
 
 model Reply {
-  id        String  @id @default(uuid())
-  comment   Comment @relation(fields: [commentId], references: [id])
+  id        String   @id @default(uuid())
   commentId String
-  author    Author  @relation(fields: [authorId], references: [id])
   authorId  String
-
-  content String
-
+  content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  author    Author   @relation(fields: [authorId], references: [id])
+  comment   Comment  @relation(fields: [commentId], references: [id])
 }
 
 model VideoLike {
-  id        String   @id @default(uuid())
-  user      Author   @relation(fields: [userId], references: [id])
-  userId    String
-  video     Video    @relation(fields: [videoId], references: [id])
-  videoId   String
-  createdAt DateTime @default(now())
+  id             String   @id @default(uuid())
+  userId         String
+  videoId        String
+  createdAt      DateTime @default(now())
+  user           Author   @relation(fields: [userId], references: [id])
+  video          Video    @relation(fields: [videoId], references: [id])
+  @@unique([userId, videoId], name: "userId_videoId")
 }
 
 model CommentLike {
   id        String   @id @default(uuid())
-  user      Author   @relation(fields: [userId], references: [id])
   userId    String
-  comment   Comment  @relation(fields: [commentId], references: [id])
   commentId String
   createdAt DateTime @default(now())
+  comment   Comment  @relation(fields: [commentId], references: [id])
+  user      Author   @relation(fields: [userId], references: [id])
 }
 
 model Follow {
   id          String   @id @default(uuid())
-  follower    Author   @relation("Follower", fields: [followerId], references: [id])
   followerId  String
-  following   Author   @relation("Following", fields: [followingId], references: [id])
   followingId String
   createdAt   DateTime @default(now())
+  follower    Author   @relation("Follower", fields: [followerId], references: [id])
+  following   Author   @relation("Following", fields: [followingId], references: [id])
 
-  @@unique([followerId, followingId])
+  @@unique([followerId, followingId], name: "followerId_followingId")
 }
 
 model Hashtag {
@@ -136,19 +123,19 @@ model Hashtag {
 
 model VideoHashtag {
   id        String  @id @default(uuid())
-  video     Video   @relation(fields: [videoId], references: [id])
   videoId   String
-  hashtag   Hashtag @relation(fields: [hashtagId], references: [id])
   hashtagId String
+  hashtag   Hashtag @relation(fields: [hashtagId], references: [id])
+  video     Video   @relation(fields: [videoId], references: [id])
 }
 
 model FavoriteVideo {
   id        String   @id @default(uuid())
-  user      Author   @relation(fields: [userId], references: [id])
   userId    String
-  video     Video    @relation(fields: [videoId], references: [id])
   videoId   String
   createdAt DateTime @default(now())
+  user      Author   @relation(fields: [userId], references: [id])
+  video     Video    @relation(fields: [videoId], references: [id])
 
-  @@unique([userId, videoId])
+  @@unique([userId, videoId], name: "userId_videoId")
 }

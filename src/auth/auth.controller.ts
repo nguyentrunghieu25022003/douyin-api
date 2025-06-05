@@ -14,12 +14,18 @@ import { RequestWithUser } from './interfaces/request-with-user.interface';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
+import { RegisterDto } from './dto/register.dto';
 import { COOKIE } from '../common/constants/index';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  @Post('register')
+  register(@Body() registerDto: RegisterDto) {
+    return this.authService.register(registerDto);
+  }
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
@@ -30,7 +36,7 @@ export class AuthController {
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const token = this.authService.login(req.user as JwtPayload);
+    const token = this.authService.login(req.user as unknown as JwtPayload);
 
     res.cookie('access_token', token.access_token, {
       httpOnly: COOKIE.HTTP_ONLY,
@@ -40,6 +46,7 @@ export class AuthController {
     });
 
     return {
+      user: token.user,
       access_token: token.access_token,
       refresh_token: token.refresh_token,
     };
@@ -47,8 +54,22 @@ export class AuthController {
 
   @Post('refresh')
   @ApiBody({ type: RefreshDto })
-  refresh(@Body() { refreshToken }: RefreshDto) {
-    return this.authService.refreshToken(refreshToken);
+  refresh(
+    @Body() { refreshToken }: RefreshDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const newToken = this.authService.refreshToken(refreshToken);
+
+    res.cookie('access_token', newToken.access_token, {
+      httpOnly: COOKIE.HTTP_ONLY,
+      secure: COOKIE.SECURE,
+      sameSite: COOKIE.SAME_SITE,
+      maxAge: COOKIE.MAX_AGE,
+    });
+
+    return {
+      access_token: newToken,
+    };
   }
 
   @Post('logout')

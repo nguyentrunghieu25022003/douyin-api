@@ -4,22 +4,21 @@ import {
   SubscribeMessage,
   MessageBody,
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
+import { VideoService } from '../video/video.service';
 
 @WebSocketGateway({ cors: true })
 export class VideoGateway {
+  constructor(private readonly videoService: VideoService) {}
+
   @WebSocketServer()
   server: Server;
   emitLike(videoId: string, count: number) {
-    this.server.emit('videoLiked', { videoId, count });
+    console.log('Ok');
   }
 
   @SubscribeMessage('likeVideo')
-  handleLike(@MessageBody() data: { videoId: string }) {
+  handleLike(@MessageBody() data: { userId: string; videoId: string }) {
     console.log(`Video ${data.videoId} liked`);
-    this.server.emit('videoLiked', {
-      videoId: data.videoId,
-      count: Math.floor(Math.random() * 1000),
-    });
   }
 }
